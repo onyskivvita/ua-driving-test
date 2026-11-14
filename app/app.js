@@ -373,6 +373,14 @@ fetch("data/bank.json")
   .then((b) => { bank = b; route(); })
   .catch(() => { $view.innerHTML = `<p class="loading">Не вдалося завантажити питання. Перевірте з'єднання.</p>`; });
 
+// Ask the browser to keep this site's storage (progress) even when it clears
+// data to free space. Browsers decide silently; installed apps usually get it.
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persisted()
+    .then((already) => already || navigator.storage.persist())
+    .catch(() => {});
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
 }

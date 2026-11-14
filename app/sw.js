@@ -1,6 +1,6 @@
 // Service worker: app shell + question bank are cached at install so the app
 // works offline; question pictures are cached the first time they are shown.
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `shell-${VERSION}`;
 const IMAGES = "images-v1";
 const SHELL_FILES = ["./", "index.html", "styles.css", "app.js", "data/bank.json",
