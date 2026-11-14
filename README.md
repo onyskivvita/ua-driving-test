@@ -8,8 +8,9 @@ From `data/raw/questions.pdf`:
 
 - Sections **1–39** (general questions for all categories, pages 1–419)
 - Section **44** — «Додаткові питання щодо категорій В1, В (загальні)» (pages 438–442)
+- Section **45** — «Додаткові питання щодо категорій В1, В (будова і терміни)» (pages 442–452)
 
-Sections for other categories (40–43 A1/A, 45+ B extras, C, D, E, T) are not included.
+Sections for other categories (40–43 A1/A, 46–47 B extras, C, D, E, T) are not included.
 
 Answers come from the official answer table `data/raw/Numer_-vidpovidej-do-nakazu.pdf`
 (наказ ГСЦ МВС від 29.10.2025 № 225).
@@ -18,7 +19,7 @@ Answers come from the official answer table `data/raw/Numer_-vidpovidej-do-nakaz
 
 | File | Contents |
 |---|---|
-| `data/questions.json` | 1,713 questions: `id` (`<section>-<number>`), section, question, options, `correct` (1-based), `correct_text`, image paths, source page |
+| `data/questions.json` | 1,746 questions: `id` (`<section>-<number>`), section, question, options, `correct` (1-based), `correct_text`, image paths, source page |
 | `data/questions.csv` | Same data as a flat table (up to 5 option columns) |
 | `data/images/` | Question illustrations (`s<section>_q<number>.jpg`) |
 | `data/answers/transcription_pass1.txt` | Hand transcription of the scanned answer table |
@@ -33,3 +34,27 @@ Answers come from the official answer table `data/raw/Numer_-vidpovidej-do-nakaz
    the answer count, or if any answer is outside the question's option range.
 
 Requires `pymupdf` (`pip install pymupdf`).
+
+## App (PWA)
+
+`app/` is an installable, offline-capable exam trainer in Ukrainian.
+
+- **Білети:** 145 fixed tickets of 20 questions (10 ПДР, 4 безпека руху, 4 будова,
+  2 домедична допомога). Every question is in at least one ticket. 20-minute limit,
+  3+ errors = не складено. The answer is checked on tap. Questions go strictly 1 → 20,
+  and the section title shows only after a wrong answer. After the ticket you can review
+  the mistakes or retake it.
+- **Мої помилки:** every question answered wrong in a ticket. Practice shows only the
+  question and options. A question leaves the list after 2 correct answers there.
+- Progress is stored in the browser (`localStorage`) on each device.
+
+Rebuild the app data after changing questions: `python3 scripts/build_app_data.py`
+(writes `app/data/bank.json`; ticket generation is seeded, so tickets stay the same).
+
+Run locally from the repo root (the app loads pictures from `data/images/`):
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open http://localhost:8000/app/.

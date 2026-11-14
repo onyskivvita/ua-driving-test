@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parent.parent
 TEXT_FIXES = {
     ("16.1", 34): lambda q: {**q, "options": [o.replace("».", "").strip() if o.endswith("».") else o
                                               for o in q["options"]]},
+    # sign numbers printed under the pictures leaked into the question text
+    ("26", 1): lambda q: {**q, "text": q["text"].replace(" 5.34 5.53", "")},
 }
 
 
