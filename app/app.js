@@ -71,8 +71,9 @@ function optionsHtml(q, { chosen = null, locked = false } = {}) {
       <span class="n">${n}.</span><span>${esc(o)}</span></button>`;
   }).join("")}</div>`;
 }
-function sectionHtml(q) {
-  return `<span class="sec">Розділ ${esc(q.s)}: <b>${esc(q.st)}</b></span>`;
+const RIGHT_TEXT = "Файно!";
+function wrongHtml(q) {
+  return `<div class="feedback bad">Дідько, читай розділ ${esc(q.s)} <b>«${esc(q.st)}»</b></div>`;
 }
 
 /* ---------- routing ---------- */
@@ -181,14 +182,14 @@ function renderExam() {
     const a = exam.answers[k];
     let cls = "dot";
     if (a !== null) cls += a === bank.questions[id].a ? " ok" : " bad";
-    else if (k === exam.i) cls += " current";
-    return `<div class="${cls}">${k + 1}</div>`;
+    if (k === exam.i) cls += " current";
+    return a !== null && k !== exam.i
+      ? `<button class="${cls}" data-jump="${k}" aria-label="Питання ${k + 1}">${k + 1}</button>`
+      : `<div class="${cls}">${k + 1}</div>`;
   }).join("");
   let feedback = "";
   if (answered) {
-    feedback = chosen === q.a
-      ? `<div class="feedback ok">Правильно!</div>`
-      : `<div class="feedback bad">Неправильно. Правильна відповідь: ${q.a}.${sectionHtml(q)}</div>`;
+    feedback = chosen === q.a ? `<div class="feedback ok">${RIGHT_TEXT}</div>` : wrongHtml(q);
   }
   const last = exam.i === 19;
   $view.innerHTML = `
@@ -202,8 +203,20 @@ function renderExam() {
       ${feedback}
     </div>
     <div class="actions">
+      ${exam.i > 0 ? `<button class="btn" id="prev">Назад</button>` : ""}
       <button class="btn primary" id="next" ${answered ? "" : "disabled"}>${last ? "Завершити" : "Далі"}</button>
     </div>`;
+  $view.querySelectorAll("[data-jump]").forEach((b) => b.addEventListener("click", () => {
+    exam.i = +b.dataset.jump;
+    renderExam();
+    window.scrollTo(0, 0);
+  }));
+  const prev = document.getElementById("prev");
+  if (prev) prev.addEventListener("click", () => {
+    exam.i--;
+    renderExam();
+    window.scrollTo(0, 0);
+  });
   $view.querySelectorAll("[data-opt]").forEach((b) => b.addEventListener("click", () => {
     if (exam.answers[exam.i] !== null) return;
     const n = +b.dataset.opt;
@@ -213,6 +226,7 @@ function renderExam() {
     document.getElementById("next").scrollIntoView({ block: "nearest", behavior: "smooth" });
   }));
   document.getElementById("next").addEventListener("click", () => {
+    if (exam.answers[exam.i] === null) return; // can't move on without answering
     if (last) return finishExam();
     exam.i++;
     renderExam();
@@ -268,7 +282,7 @@ function renderReview() {
       <p class="q-text">${esc(x.q.q)}</p>
       ${imagesHtml(x.q)}
       ${optionsHtml(x.q, { chosen: x.a, locked: true })}
-      <div class="feedback bad">Правильна відповідь: ${x.q.a}.${sectionHtml(x.q)}</div>
+      ${wrongHtml(x.q)}
     </div>`).join("") + `
     <div class="actions"><button class="btn primary" data-go="#/ticket/${exam.n}/result">До результату</button></div>`;
   window.scrollTo(0, 0);
@@ -300,10 +314,10 @@ function renderPractice() {
     if (chosen === q.a) {
       const m = progress.mistakes[id];
       feedback = !m
-        ? `<div class="feedback ok">Правильно! Питання прибрано з «Мої помилки».</div>`
-        : `<div class="feedback ok">Правильно! Ще ${CORRECT_TO_CLEAR - m.ok} правильна відповідь — і питання зникне зі списку.</div>`;
+        ? `<div class="feedback ok">${RIGHT_TEXT} Питання прибрано з «Мої помилки».</div>`
+        : `<div class="feedback ok">${RIGHT_TEXT} Ще ${CORRECT_TO_CLEAR - m.ok} правильна відповідь — і питання зникне зі списку.</div>`;
     } else {
-      feedback = `<div class="feedback bad">Неправильно. Правильна відповідь: ${q.a}.${sectionHtml(q)}</div>`;
+      feedback = wrongHtml(q);
     }
   }
   const last = practice.i === practice.ids.length - 1;
